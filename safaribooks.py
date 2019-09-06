@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# coding: utf-8
 import os
 import sys
 import json
@@ -14,9 +12,12 @@ from random import random
 from multiprocessing import Process, Queue, Value
 from urllib.parse import urljoin, urlsplit, urlparse
 
+print("Reached here")
 
 PATH = os.path.dirname(os.path.realpath(__file__))
-COOKIES_FILE = os.path.join(PATH, "cookies.json")
+COOKIES_FILE = os.path.join(PATH, "cookies.all.json")
+
+print(COOKIES_FILE)
 
 ORLY_BASE_HOST = "oreilly.com"  # PLEASE INSERT URL HERE
 
@@ -70,7 +71,8 @@ class Display:
         self.logger.info(str(message))  # TODO: "utf-8", "replace"
 
     def out(self, put):
-        sys.stdout.write("\r" + " " * self.columns + "\r" + str(put, "utf-8", "replace") + "\n")
+        # sys.stdout.write(os.linesep + " " * self.columns + os.linesep + str(put, "utf-8", "replace") + os.linesep)
+        sys.stdout.write(os.linesep + " " * self.columns + os.linesep + str(put) + os.linesep)
 
     def info(self, message, state=False):
         self.log(message)
@@ -192,6 +194,7 @@ class SafariBooks:
 
     API_TEMPLATE = SAFARI_BASE_URL + "/api/v1/book/{0}/"
 
+    print("Reached here")
     HEADERS = {
         "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
         "accept-encoding": "gzip, deflate",
@@ -289,7 +292,9 @@ class SafariBooks:
                                   "    Please use the --cred option to perform the login.")
 
             self.cookies = json.load(open(COOKIES_FILE))
-
+            if type(self.cookies) is list:
+              #Hmmm. These are all the cookies in their glorious form. Convert to dictionary.
+              self.cookies = {x['name'] : x['value'] for x in self.cookies}
         else:
             self.display.info("Logging into Safari Books Online...", state=True)
             self.do_login(*args.cred)
@@ -317,7 +322,7 @@ class SafariBooks:
         self.clean_book_title = "".join(self.escape_dirname(self.book_title).split(",")[:2]) \
                                 + " ({0})".format(self.book_id)
 
-        books_dir = os.path.join(PATH, "Books")
+        books_dir = os.path.join(PATH, "..", "Books")
         if not os.path.isdir(books_dir):
             os.mkdir(books_dir)
 
@@ -351,6 +356,7 @@ class SafariBooks:
             self.filename = self.book_chapters[0]["filename"]
             self.save_page_html(cover_html)
 
+        print("Reached here")
         self.css_done_queue = Queue(0) if "win" not in sys.platform else WinQueue()
         self.display.info("Downloading book CSSs... (%s files)" % len(self.css), state=True)
         self.collect_css()
@@ -373,6 +379,8 @@ class SafariBooks:
         sys.exit(0)
 
     def return_cookies(self):
+        # cookiesDictionary = {x['name'] : x['value'] for x in self.cookies}
+        # return " ".join(["{0}={1};".format(k, v) for k, v in cookiesDictionary.items()])
         return " ".join(["{0}={1};".format(k, v) for k, v in self.cookies.items()])
 
     def return_headers(self, url):
@@ -982,7 +990,7 @@ class SafariBooks:
             self.create_toc().encode("utf-8", "xmlcharrefreplace")
         )
 
-        zip_file = os.path.join(PATH, "Books", self.book_id)
+        zip_file = os.path.join(PATH, "..", "Books", self.book_id)
         if os.path.isfile(zip_file + ".zip"):
             os.remove(zip_file + ".zip")
 
@@ -992,6 +1000,7 @@ class SafariBooks:
 
 # MAIN
 if __name__ == "__main__":
+    print("Reached here")
     arguments = argparse.ArgumentParser(prog="safaribooks.py",
                                         description="Download and generate an EPUB of your favorite books"
                                                     " from Safari Books Online.",
@@ -1024,6 +1033,7 @@ if __name__ == "__main__":
     )
 
     args_parsed = arguments.parse_args()
+    print("Reached here")
 
     if args_parsed.cred:
         parsed_cred = SafariBooks.parse_cred(args_parsed.cred)
