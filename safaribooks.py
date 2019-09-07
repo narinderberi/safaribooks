@@ -15,7 +15,7 @@ from urllib.parse import urljoin, urlsplit, urlparse
 print("Reached here")
 
 PATH = os.path.dirname(os.path.realpath(__file__))
-COOKIES_FILE = os.path.join(PATH, "cookies.all.json")
+COOKIES_FILE = os.path.join(PATH, "cookies.json")
 
 print(COOKIES_FILE)
 
@@ -1046,4 +1046,10 @@ if __name__ == "__main__":
         if args_parsed.no_cookies:
             arguments.error("invalid option: `--no-cookies` is valid only if you use the `--cred` option")
 
-    SafariBooks(args_parsed)
+    bookIds = args_parsed.bookid.split(";")
+    for bookId in bookIds:
+      args_parsed.bookid = bookId
+      print("Downloading for " + bookId + "...")
+      import time
+      time.sleep(2)
+      SafariBooks(args_parsed)
