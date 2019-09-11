@@ -373,10 +373,8 @@ class SafariBooks:
         self.display.done(os.path.join(self.BOOK_PATH, self.book_id + ".epub"))
         self.display.unregister()
 
-        if not self.display.in_error and not args.log:
-            os.remove(self.display.log_file)
-
-        sys.exit(0)
+        # if not self.display.in_error and not args.log:
+        #     os.remove(self.display.log_file)
 
     def return_cookies(self):
         # cookiesDictionary = {x['name'] : x['value'] for x in self.cookies}
