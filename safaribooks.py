@@ -134,16 +134,16 @@ class Display:
 
     def book_info(self, info):
         description = self.parse_description(info["description"]).replace("\n", " ")
-        for t in [
-            ("Title", info["title"]), ("Authors", ", ".join(aut["name"] for aut in info["authors"])),
-            ("Identifier", info["identifier"]), ("ISBN", info["isbn"]),
-            ("Publishers", ", ".join(pub["name"] for pub in info["publishers"])),
-            ("Rights", info["rights"]),
-            ("Description", description[:500] + "..." if len(description) >= 500 else description),
-            ("Release Date", info["issued"]),
-            ("URL", info["web_url"])
-        ]:
-            self.info("{0}{1}{2}: {3}".format(self.SH_YELLOW, t[0], self.SH_DEFAULT, t[1]), True)
+        # for t in [
+        #     ("Title", info["title"]), ("Authors", ", ".join(aut["name"] for aut in info["authors"])),
+        #     ("Identifier", info["identifier"]), ("ISBN", info["isbn"]),
+        #     ("Publishers", ", ".join(pub["name"] for pub in info["publishers"])),
+        #     ("Rights", info["rights"]),
+        #     ("Description", description[:500] + "..." if len(description) >= 500 else description),
+        #     ("Release Date", info["issued"]),
+        #     ("URL", info["web_url"])
+        # ]:
+        #     self.info("{0}{1}{2}: {3}".format(self.SH_YELLOW, t[0], self.SH_DEFAULT, t[1]), True)
 
     def state(self, origin, done):
         progress = int(done * 100 / origin)
@@ -306,6 +306,8 @@ class SafariBooks:
 
         self.display.info("Retrieving book info...")
         self.book_info = self.get_book_info()
+        # print(self.book_info)
+        # sys.exit(0)
         self.display.book_info(self.book_info)
 
         self.display.info("Retrieving book chapters...")
@@ -329,7 +331,9 @@ class SafariBooks:
         self.BOOK_PATH = os.path.join(books_dir, self.clean_book_title)
         self.css_path = ""
         self.images_path = ""
-        self.create_dirs()
+        needsDownloading = self.create_dirs()
+        if not needsDownloading:
+          return
         self.display.info("Output directory:\n    %s" % self.BOOK_PATH)
 
         self.chapter_title = ""
@@ -721,7 +725,7 @@ class SafariBooks:
     def create_dirs(self):
         if os.path.isdir(self.BOOK_PATH):
             self.display.log("Book directory already exists: %s" % self.BOOK_PATH)
-
+            return False
         else:
             os.makedirs(self.BOOK_PATH)
 
@@ -745,6 +749,7 @@ class SafariBooks:
         else:
             os.makedirs(self.images_path)
             self.display.images_ad_info.value = 1
+        return True
 
     def save_page_html(self, contents):
         self.filename = self.filename.replace(".html", ".xhtml")
@@ -1045,7 +1050,14 @@ if __name__ == "__main__":
             arguments.error("invalid option: `--no-cookies` is valid only if you use the `--cred` option")
 
     bookIds = args_parsed.bookid.split(";")
+    from glob import glob
+    
     for bookId in bookIds:
+      allDirs = glob("c:\\sources\\books\\*")
+      matchingDirs = [x for x in allDirs if f'({bookId})' in x]
+      if len(matchingDirs) == 1:
+        print(f'Already downloaded {bookId}')
+        continue
       args_parsed.bookid = bookId
       print("Downloading for " + bookId + "...")
       import time
